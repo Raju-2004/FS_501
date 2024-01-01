@@ -1,63 +1,58 @@
-const fs = require('fs')
-const http = require('http')
-// const readline = require('readline')
-const args = require('minimist')(process.argv.slice(2),{
-  default: {
-    port: 4000
-  }
-})
-console.log(args.port)
+const todoList = () => {
+  const all = [];
+  const add = (todoTask) => {
+    all.push(todoTask);
+  };
+  const MarkAsComplete = (index) => {
+    all[index].completed = true;
+  };
+  const DeleteTodo = (index) => {
+    all.splice(index, 1);
+  };
+  const overdue = () => {
+    const over = all.filter((todo) => todo.dueDate < formattedDate(dateToday));
+    return over;
+  };
+  const dueToday = () => {
+    const today = all.filter(
+      (todo) => todo.dueDate === formattedDate(dateToday),
+    );
+    return today;
+  };
+  const dueLater = () => {
+    const later = all.filter((todo) => todo.dueDate > formattedDate(dateToday));
+    return later;
+  };
+  const toDisplayableList = (Todos) => {
+    const displayString = Todos.map(
+      (todo) => `[${todo.completed ? "X" : " "}] ${todo.title} ${todo.dueDate}`,
+    ).join("\n");
+    return displayString;
+  };
+  return {
+    all,
+    add,
+    MarkAsComplete,
+    DeleteTodo,
+    overdue,
+    dueToday,
+    dueLater,
+    toDisplayableList,
+  };
+};
 
-let homeContent = ''
-let projectContent = ''
-let registrationContent = ''
+const dateToday = new Date();
 
-fs.readFile('index.html', (err, home) => {
-  if (err) throw err
-  homeContent = home
-})
+const formattedDate = (d) => {
+  return d.toISOString().split("T")[0];
+};
 
-fs.readFile('project.html', (err, project) => {
-  if (err) throw err
-  projectContent = project
-})
+// const today = formattedDate(dateToday)
+// const yesterday = formattedDate(
+//   new Date(dateToday.getTime() - 24 * 60 * 60 * 1000)
+// )
+// const tomorrow = formattedDate(
+//   new Date(dateToday.getTime() + 24 * 60 * 60 * 1000)
+// )
 
-fs.readFile('registration.html', (err, registration) => {
-  if (err) throw err
-  registrationContent = registration
-})
-
-function startServer () {
-  http
-    .createServer((req, res) => {
-      const url = req.url
-      res.writeHeader(200, { 'Content-Type': 'text/html' })
-      switch (url) {
-        case '/project':
-          res.end(projectContent)
-          res.end()
-          break
-        case '/registration' :
-          res.write(registrationContent)
-          res.end()
-          break
-        default:
-          res.end(homeContent)
-          res.end()
-          break
-      }
-    })
-    .listen(args.port)
-}
-
-startServer()
-
-// const lineDetail = readline.createInterface({
-//   input: process.stdin,
-//   output: process.stdout
-// })
-
-// lineDetail.question('please provide your name - ', (name) => {
-//   console.log(`Hi ${name}`)
-//   lineDetail.close()
-// })
+module.exports = todoList;
